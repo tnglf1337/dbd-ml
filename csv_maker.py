@@ -19,7 +19,6 @@ def create_csv_from_perks(image_folder, output_csv, image_size=(28, 28)):
 
                 try:
                     img = Image.open(filepath).convert("L").resize(image_size)
-                    img.show()
                     flat = np.array(img).flatten() / 255.0  # Normalisiert
                     writer.writerow(list(flat) + [label])
                     print(f"Gespeichert: {filename} → Label: {label}")
