@@ -1,7 +1,7 @@
 import os
 import csv
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 def create_csv_from_perks(image_folder, output_csv, image_size=(28, 28)):
     with open(output_csv, mode="w", newline="") as csv_file:
@@ -12,14 +12,18 @@ def create_csv_from_perks(image_folder, output_csv, image_size=(28, 28)):
         header = [f"pixel_{i}" for i in range(num_pixels)] + ["label"]
         writer.writerow(header)
 
+        i = 0
         for filename in os.listdir(image_folder):
+            i+=1
             if filename.lower().endswith(".png"):
                 label = filename.removesuffix(".png")
                 filepath = os.path.join(image_folder, filename)
-
                 try:
                     img = Image.open(filepath).convert("L").resize(image_size)
                     flat = np.array(img).flatten() / 255.0  # Normalisiert
+
+                    #if i == 10: img.show()
+
                     writer.writerow(list(flat) + [label])
                     print(f"Gespeichert: {filename} → Label: {label}")
                 except Exception as e:

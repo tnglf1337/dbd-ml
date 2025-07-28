@@ -1,8 +1,9 @@
 import os
 import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 import platform
+import pytesseract
 
 screen_path = str()
 
@@ -30,9 +31,9 @@ def read_screenshot():
                 screens[dateiname] = bild
                 print(f"{dateiname} geladen – Größe: {bild.size}, Format: {bild.format}")
                 #bild.show()
-                return screens
             except Exception as e:
                 print(f"Fehler beim Laden von {dateiname}: {e}")
+    return screens
 
 def extract_img(pil_img, box_points):
     """
@@ -53,6 +54,31 @@ def extract_img(pil_img, box_points):
 
     # Bild ausschneiden
     return pil_img.crop(crop_box)
+
+def extract_raw_killer_name(name_section):
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+    name_section = ImageEnhance.Contrast(name_section).enhance(2)
+    name_section = name_section.convert("L")
+    name_section = name_section.filter(ImageFilter.MedianFilter())
+    name_section = name_section.point(lambda p: 255 if p > 140 else 0)
+
+    text = pytesseract.image_to_string(name_section, lang='deu')
+
+    return text
+
+def extract_killer_name(name_section):
+    raw_text = extract_raw_killer_name(name_section)
+    raw_text = raw_text.strip()
+    print("Raw: ", raw_text)
+
+    if raw_text.startswith("THE"):
+        return raw_text.split(" ")[1].lower()
+    else:
+        trimmed_text = raw_text.split(" ")[1:]
+        return ' '.join(trimmed_text).lower()
+
+    return raw_text
 
 def order_points(pts):
     # sortiere Punkte: zuerst links oben, rechts oben, rechts unten, links unten
@@ -77,8 +103,12 @@ def toPng():
             bildpfad = os.path.join(r"C:\Users\Timo\Desktop\dpd-killer-perks", dateiname)
             try:
                 bild = Image.open(bildpfad)
+
+                padding = (0, 10, 0, 10)
+                bild = ImageOps.expand(bild, border=padding, fill=0)
+
                 dateiname = dateiname.removesuffix(".webp")
-                zielpfad = os.path.join(r"C:\Users\Timo\Desktop\dpd-killer-perks\png", f"{dateiname}.png")
+                zielpfad = os.path.join(r"C:\Users\Timo\Documents\myrepos\dbd-ml\dpd-killer-perks\png", f"{dateiname}.png")
                 bild.save(zielpfad, "PNG")
             except Exception as e:
                 print(f"Fehler beim Laden von {dateiname}: {e}")

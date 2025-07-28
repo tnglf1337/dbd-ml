@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
-
+from PIL import ImageEnhance
 
 def preprocess_image(pil_img, size=(28, 28)):
     """
@@ -69,13 +69,21 @@ def print_compare(expected):
     plt.imshow(expected_img, cmap="gray")
     plt.show()
 
-from PIL import ImageEnhance
+def print_processed(expected):
+    """
+    Zeigt das erwartete Bild in Graustufen an.
+
+    :param expected: 1D NumPy-Array (Vektor mit Werten zwischen 0 und 1)
+    """
+    expected_img = expected.reshape(28, 28)
+    plt.imshow(expected_img, cmap="gray")
+    plt.title("Processed Image")
+    plt.axis('off')
+    plt.show()
 
 def adjust_brightness(pil_img, factor=0.7):
     enhancer = ImageEnhance.Brightness(pil_img)
     return enhancer.enhance(factor)  # < 1 dunkler, > 1 heller
-
-from PIL import ImageEnhance
 
 def adjust_contrast(pil_img, factor=4.4):
     enhancer = ImageEnhance.Contrast(pil_img)
